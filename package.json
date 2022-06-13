@@ -1,0 +1,20 @@
+{
+  "name": "valorantbot",
+  "version": "1.0.0",
+  "description": "A bot that helps Valorant players get updates through discord.",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/builders": "^0.15.0",
+    "@discordjs/rest": "^0.5.0",
+    "discord-api-types": "^0.33.5",
+    "discord.js": "^13.8.0",
+    "node-fetch": "^2.6.7",
+    "xhr2": "^0.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.17.0"
+  }
+}
