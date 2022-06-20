@@ -1,14 +1,16 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const lib = require('C:/Users/dawit/Desktop/ValorantBot/get-puid.js');
-const objStorage = require('../storage.json');
+const lib = require('../get-puid.js');
 const fetch = require('node-fetch');
 const { MessageEmbed } = require('discord.js');
+const fs = require('node:fs');
 
+const rawObj = fs.readFileSync('./storage.json');
+const objStorage = JSON.parse(rawObj);
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('val-me')
-		.setDescription('Replies with information about Apex Legends current map!'),
+		.setDescription('Search for your Valorant stats.'),
 	async execute(interaction) {
 
 		let guildID = objStorage[interaction.guildId];
@@ -29,14 +31,13 @@ module.exports = {
 			objStorage[interaction.guildId][interaction.user.id]['username'] = {};
 			valUID = objStorage[interaction.guildId][interaction.user.id]['username']
 		}
-
-
-		if (Object.keys(objStorage[interaction.guildId][interaction.user.id]['username']).length) {
+		
+		if (Object.keys(objStorage[interaction.guildId][interaction.user.id]['username'])[0]) {
 			let userPUID = valUID[Object.keys(valUID)];
-			console.log("username: ", userPUID);
+
 			returnUser(userPUID).then((userInfo) => {
 				const exampleEmbed = new MessageEmbed()
-					.setColor('#fc2403')
+					.setColor('#FDDA0D')
 					.setTitle(`Stats for ${Object.keys(valUID)}`)
 					.setDescription('For the past 5 games.')
 					// .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })
@@ -48,6 +49,7 @@ module.exports = {
 					.setTimestamp()
 				// .setFooter({ text: 'Some footer text here', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` });
 				interaction.reply({ embeds: [exampleEmbed] });
+
 			})
 
 		} else {
@@ -60,9 +62,11 @@ module.exports = {
 						lib.getPuid(messages.first().content).then((response) => { // returns PUID
 
 							objStorage[interaction.guildId][interaction.user.id]['username'][messages.first().content] = response;
+							fs.writeFileSync('./storage.json', JSON.stringify(objStorage, null, 2));
+
 							returnUser(response).then((userInfo) => {
 								const exampleEmbed = new MessageEmbed()
-									.setColor('#fc2403')
+									.setColor('#FDDA0D')
 									.setTitle(`Stats for ${messages.first().content}`)
 									.setDescription('For the past 5 games.')
 									// .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })
@@ -133,3 +137,4 @@ function returnUser(PUID) {
 			});
 	})
 }
+

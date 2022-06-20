@@ -63,7 +63,7 @@ module.exports = {
 							objStorage[interaction.guildId][interaction.user.id]['username'][messages.first().content] = response;
 							getMMR(response).then((userInfo) => {
 								const exampleEmbed = new MessageEmbed()
-									.setColor('#fc2403')
+									.setColor('#FDDA0D')
 									.setTitle(`Stats for ${Object.keys(valUID)}`)
 									.setDescription(`MMR for user ${Object.keys(valUID)}`)
 									// .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })

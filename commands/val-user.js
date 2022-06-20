@@ -20,7 +20,7 @@ module.exports = {
                     lib.getPuid(messages.first().content).then((response) => {
                         returnUser(response).then((userInfo) => {
                             const exampleEmbed = new MessageEmbed()
-                                .setColor('#fc2403')
+                                .setColor('#FDDA0D')
                                 .setTitle(`Stats for ${messages.first().content}`)
                                 .setDescription('For the past 5 games.')
                                 // .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })

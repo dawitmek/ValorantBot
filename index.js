@@ -3,8 +3,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Intents } = require('discord.js');
 const { token } = require('./config.json');
-const { log } = require('node:console');
-const { resolve } = require('node:path');
 
 // Create a new client instance Discord.js
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES", "DIRECT_MESSAGES"] });
