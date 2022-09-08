@@ -1,95 +1,37 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const lib = require('../get-puid.js');
 const fetch = require('node-fetch');
 const { MessageEmbed } = require('discord.js');
 const fs = require('node:fs');
 
-const rawObj = fs.readFileSync('./storage.json');
-const objStorage = JSON.parse(rawObj);
+const { MongoClient } = require('mongodb');
+
+const dbclient = MongoClient(process.env.DATABASECONNECTION);
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('val-me')
 		.setDescription('Search for your Valorant stats.'),
 	async execute(interaction) {
-
-		let guildID = objStorage[interaction.guildId];
-
-		if (!guildID) { // Check if we have a guildID
-			objStorage[interaction.guildId] = {}
-		}
-
-		let discordUID = objStorage[interaction.guildId][interaction.user.id];
-
-		if (!discordUID) {// Check if we have a discordUID
-			objStorage[interaction.guildId][interaction.user.id] = {};
-		}
-
-		let valUID = objStorage[interaction.guildId][interaction.user.id]['username'];
-
-		if (!valUID) { // If empty string
-			objStorage[interaction.guildId][interaction.user.id]['username'] = {};
-			valUID = objStorage[interaction.guildId][interaction.user.id]['username']
-		}
-		
-		if (Object.keys(objStorage[interaction.guildId][interaction.user.id]['username'])[0]) {
-			let userPUID = valUID[Object.keys(valUID)];
-
+		await dbclient.connect();
+		let user = getUserDB(interaction.guildId, interaction.user.id);
+		if (userPUID.puid) {
 			returnUser(userPUID).then((userInfo) => {
-				const exampleEmbed = new MessageEmbed()
-					.setColor('#FDDA0D')
-					.setTitle(`Stats for ${Object.keys(valUID)}`)
-					.setDescription('For the past 5 games.')
-					// .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })
-					.addFields(
+				let name = user,
+					fields = [
 						{ name: 'Rank: ', value: `${userInfo.tier}` },
 						{ name: 'Winrate: ', value: `${userInfo.wr}` },
 						{ name: `KDA: `, value: `${userInfo.kda}` },
-					)
-					.setTimestamp()
-				// .setFooter({ text: 'Some footer text here', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` });
-				interaction.reply({ embeds: [exampleEmbed] });
+					]
+				interaction.reply({ embeds: [createEmbed(name, fields, true)] });
 
 			})
-
 		} else {
-			interaction.reply('Enter your Valorant username (First Use Only)\nex. Example#1234').then(() => {
-				const filter = m => interaction.user.id === m.author.id;
-
-				interaction.channel.awaitMessages({ filter, time: 60000, max: 1, errors: ['time'] })
-					.then(messages => { // returns UserName
-						objStorage[interaction.guildId][interaction.user.id]['username'][messages.first().content] = '';
-						lib.getPuid(messages.first().content).then((response) => { // returns PUID
-
-							objStorage[interaction.guildId][interaction.user.id]['username'][messages.first().content] = response;
-							fs.writeFileSync('./storage.json', JSON.stringify(objStorage, null, 2));
-
-							returnUser(response).then((userInfo) => {
-								const exampleEmbed = new MessageEmbed()
-									.setColor('#FDDA0D')
-									.setTitle(`Stats for ${messages.first().content}`)
-									.setDescription('For the past 5 games.')
-									// .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })
-									.addFields(
-										{ name: 'Rank: ', value: `${userInfo.tier}` },
-										{ name: 'Winrate: ', value: `${userInfo.wr}` },
-										{ name: `KDA: `, value: `${userInfo.kda}` },
-									)
-									.setTimestamp()
-								// .setFooter({ text: 'Some footer text here', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` });
-								interaction.followUp({ embeds: [exampleEmbed] });
-
-							})
-						}).catch((error) => {
-							interaction.followUp(`There was an error with fetch. ${error}`);
-						})
-					})
-					.catch(() => {
-						interaction.followUp('You did not enter any input!');
-					});
-			});
+			interaction.reply({
+				content: "You don't have a profile! Create one using /val-update-me",
+				ephemeral: true
+			})
 		}
-
+		await dbclient.close()
 	}
 }
 
@@ -135,6 +77,25 @@ function returnUser(PUID) {
 			.catch((error) => {
 				console.log("Had error fetching matches:", error);
 			});
+	})
+}
+
+function createEmbed(name, fields, timestamp) {
+	const embed = new MessageEmbed()
+		.setColor('#FDDA0D')
+		.setTitle(`Stats for ${name}`)
+		.setDescription('For the past 5 games.')
+		// .setAuthor({ name: 'Valorant Bot', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` })
+		.addFields(fields)
+	if (timestamp) {
+		embed.setTimestamp()
+	}
+
+	return embed
+}
+async function getUserDB(guild, user) {
+	return await dbclient.db('val-user').collection(guild).find({
+		user: user
 	})
 }
 

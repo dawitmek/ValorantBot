@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Intents } = require('discord.js');
-const { token } = require('./config.json');
+const token = process.env.VALTOKEN;
 
 // Create a new client instance Discord.js
 const client = new Client({ intents: ["GUILDS", "GUILD_MESSAGES", "DIRECT_MESSAGES"] });
@@ -26,10 +26,6 @@ for (const file of commandFiles) {
 client.once('ready', () => {
 	console.log('Ready from discord.js!');
 	client.user.setActivity("Your mother", { type: "PLAYING"})
-	let avatarURL = client.user.displayAvatarURL(),
-	botID = client.user.id;
-	// module.exports = { avatarURL, botID };
-
 });
 
 client.on("messageCreate", (message) => {
