@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A bot that helps Valorant players get updates through discord.",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -11,6 +15,7 @@
     "@discordjs/rest": "^0.5.0",
     "discord-api-types": "^0.33.5",
     "discord.js": "^13.10.3",
+    "heroku": "^7.63.0",
     "mongodb": "^4.9.1",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.19",
