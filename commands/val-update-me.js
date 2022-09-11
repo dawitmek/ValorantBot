@@ -1,22 +1,67 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const lib = require('../get-puid.js');
-const { MessageEmbed } = require('discord.js');
-const objStorage = require('../storage.json');
-const fs = require('node:fs');
+const { SlashCommandBuilder } = require("@discordjs/builders");
+const lib = require("../external-functions.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('val-update-me')
-        .setDescription('Update your existing username.')
-        .addStringOption(option =>
-            option.setName('set user')
-                .setDescription('Set username to bot.')
-                .setRequired(true)),
+        .setName("val-update-me")
+        .setDescription("Update your existing username.")
+        .addStringOption((option) =>
+            option
+                .setName("set-user")
+                .setDescription("Set new username with identifier (ex. Username#NA1).")
+                .setRequired(true)
+        ),
     async execute(interaction) {
+        let newUsername = interaction.options._hoistedOptions[0].value;
+        await lib.connectDB();
         // prompts for username then returns rank, kd and winrate
-        console.log(interaction);
-        // lib.getPuid()
-
-    }
-}
-
+        let userData = await lib.getUserDB(
+            interaction.guildId,
+            interaction.user.id
+        );
+        console.log("User data: ", userData);
+        if (userData) {
+            let PUID = await lib.getPuid(newUsername);
+            let updated = await lib.dbclient
+                .db("Valorant-Bot")
+                .collection(interaction.guildId)
+                .updateOne(
+                    {
+                        id: interaction.user.id,
+                    },
+                    {
+                        $set: {
+                            valUsername: newUsername,
+                            puid: PUID,
+                        },
+                    }
+                );
+            console.log("updated: ", updated);
+            if (updated) {
+                interaction.reply({
+                    content: `User ${newUsername} been updated!`,
+                    ephemeral: true,
+                });
+                lib.closeDB();
+            }
+        } else {
+            let PUID = await lib.getPuid(newUsername);
+            let inserted = await lib.dbclient
+                .db("Valorant-Bot")
+                .collection(interaction.guildId)
+                .insertOne({
+                    id: interaction.user.id,
+                    valUsername: newUsername,
+                    puid: PUID,
+                });
+            console.log("inserted: ", inserted);
+            if (inserted) {
+                interaction.reply({
+                    content: `User ${newUsername} been created!`,
+                    ephemeral: true,
+                });
+                lib.closeDB();
+            }
+        }
+    },
+};
