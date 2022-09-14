@@ -22,12 +22,12 @@ for (const file of commandFiles) {
 // When the client is ready, run this code (only once) Discord.js
 client.once('ready', () => {
 	console.log('Ready from discord.js!');
-	client.user.setActivity("Your mother", { type: "PLAYING"})
+	client.user.setActivity("Your mother", { type: "PLAYING" })
 });
 
 client.on("messageCreate", (message) => {
-  if (message.author.bot) return false; 
-  
+	if (message.author.bot) return false;
+
 });
 //	Discord.js
 client.on('interactionCreate', async interaction => {
@@ -38,12 +38,18 @@ client.on('interactionCreate', async interaction => {
 	if (!command) return;
 
 	try {
-		await command.execute(interaction);
-	} catch (error) {
+		client.api.interactions(interaction.id, interaction.token).callback.post({
+			data: {
+				type: 5,
+			},
+		})
+		await command.execute(interaction, client);
+	} catch (err) {
 		console.error(error);
-		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		//interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
+
 
 
 

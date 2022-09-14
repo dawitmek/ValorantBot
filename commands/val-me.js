@@ -7,36 +7,48 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("val-me")
 		.setDescription("Search for your Valorant stats."),
-	async execute(interaction) {
+	async execute(interaction, client) {
 		try {
 			await lib.dbclient.connect();
 			let userData = await lib.getUserDB(
 				interaction.guildId,
 				interaction.user.id
 			);
-			// console.log(userData);
+
 			if (userData) {
-				lib.returnUser(userData.puid).then(async (userInfo) => {
+				lib.returnUserData(userData.puid).then(async (userInfo) => {
 					let name = userData.valUsername,
 						fields = [
 							{ name: "Rank: ", value: `${userInfo.tier}` },
 							{ name: "Winrate: ", value: `${userInfo.wr}` },
 							{ name: `KDA: `, value: `${userInfo.kda}` },
 						];
-					interaction.reply({ embeds: [lib.createEmbed(name, fields, true)] });
-					await lib.closeDB();
+					let embed = lib.createEmbed(name, fields, true);
+					try {
+						await lib.editInteraction(interaction, embed, false);
+						await lib.closeDB();
+					} catch (err) {
+						console.error('There was an error responding/embeding response ', err);
+						lib.editInteraction(interaction, err, true);
+					}
+				}).catch(err => {
+					console.error('Eror was rejected: ', err);
+					lib.editInteraction(interaction, err.toString());
+				});
 
-				});
 			} else {
-				interaction.reply({
-					content: "You don't have a profile! Create one using /val-update-me",
-					ephemeral: true,
-				});
-				lib.closeDB();
+				try {
+					let response = "You don't have a profile! Create one using /val-update-me";
+					lib.editInteraction(interaction, response);
+					await lib.closeDB();
+				} catch (err) {
+					console.error('There was an error responding (No user name found ', err);
+				}
 
 			}
-		} catch (error) {
-			console.error('An error occured while fetching data', error)
+		} catch (err) {
+			console.error('An error occured while fetching data', err);
+			lib.editInteraction(interaction, err.toString());
 		}
 	},
 };

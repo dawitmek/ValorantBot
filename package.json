@@ -13,9 +13,10 @@
   "dependencies": {
     "@discordjs/builders": "^0.15.0",
     "@discordjs/rest": "^0.5.0",
+    "axios": "^0.27.2",
     "discord-api-types": "^0.33.5",
     "discord.js": "^13.10.3",
-    "heroku": "^7.63.0",
+    "heroku": "^7.7.8",
     "mongodb": "^4.9.1",
     "node-fetch": "^2.6.7",
     "nodemon": "^2.0.19",

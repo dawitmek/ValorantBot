@@ -13,23 +13,24 @@ module.exports = {
                 .setName("search-user")
                 .setDescription("Search for username with identifier (ex. Username#NA1).")
                 .setRequired(true)),
-    async execute(interaction) {
+    async execute(interaction, client) {
         let message = interaction.options._hoistedOptions[0].value;
-
         lib.getPuid(message).then((PUID) => {
             lib.getMMR(PUID).then((userInfo) => {
-                const exampleEmbed = lib.createEmbed(message,
-                    { name: 'Rank: ', value: `${userInfo.current_rank}` },
-                    { name: 'MMR Change:: ', value: `${userInfo.mmr_change}` },
-                    { name: `Current Elo: `, value: `${userInfo.current_elo}` },
+                const embed = lib.createEmbed(message,
+                    [
+                        { name: 'Rank: ', value: `${userInfo.current_rank}` },
+                        { name: 'MMR Change:: ', value: `${userInfo.mmr_change}` },
+                        { name: `Current Elo: `, value: `${userInfo.current_elo}` },
+                    ],
                     true)
-                // .setFooter({ text: 'Some footer text here', iconURL: `https://cdn.discordapp.com/avatars/${avatarURL.botID}/${avatarURL.avatarURL}.png` });
-                interaction.reply({ embeds: [exampleEmbed] });
+                lib.editInteraction(interaction, embed, false);
+
             }).catch((err) => {
-                interaction.reply({content: `Error: ${err}`, ephemeral: true});
+                lib.editInteraction(interaction, err, true);
             })
         }).catch((err) => {
-            interaction.reply({content: `Error fetching Valorant ID. ${err}`, ephemeral: true});
+            interaction.reply({ content: `Error fetching Valorant ID. ${err}`, ephemeral: true });
             console.error(err);
         })
     }

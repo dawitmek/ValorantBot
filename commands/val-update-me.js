@@ -11,7 +11,7 @@ module.exports = {
                 .setDescription("Set new username with identifier (ex. Username#NA1).")
                 .setRequired(true)
         ),
-    async execute(interaction) {
+    async execute(interaction, client) {
         let newUsername = interaction.options._hoistedOptions[0].value;
         await lib.connectDB();
         // prompts for username then returns rank, kd and winrate
@@ -38,10 +38,7 @@ module.exports = {
                 );
             console.log("updated: ", updated);
             if (updated) {
-                interaction.reply({
-                    content: `User ${newUsername} been updated!`,
-                    ephemeral: true,
-                });
+                lib.editInteraction(interaction, `User ${newUsername} been updated!`, true)
                 lib.closeDB();
             }
         } else {
@@ -56,10 +53,7 @@ module.exports = {
                 });
             console.log("inserted: ", inserted);
             if (inserted) {
-                interaction.reply({
-                    content: `User ${newUsername} been created!`,
-                    ephemeral: true,
-                });
+                lib.editInteraction(interaction, `User ${newUsername} been created!`, true)
                 lib.closeDB();
             }
         }
